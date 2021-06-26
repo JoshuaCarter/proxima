@@ -33,7 +33,7 @@ interface Update {
 }
 
 class Main {
-    private readonly snapshotUrl = 'https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=100';
+    private readonly snapshotUrl = 'https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=1000';
     private readonly updatesUrl = 'wss://stream.binance.com:9443/ws/btcusdt@depth@100ms';
     private readonly websock: WebSocket;
     private readonly targetBTC: number;

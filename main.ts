@@ -138,7 +138,7 @@ class Main {
         let avgBid: number = avgTrade(this.targetBTC, Object.keys(this.snapshot.bids).sort(), this.snapshot.bids);
         let avgAsk: number = avgTrade(this.targetBTC, Object.keys(this.snapshot.asks).sort().reverse(), this.snapshot.asks);
 
-        process.stdout.write(`\r${this.targetBTC}x BTC\t\tBID: \$${avgBid.toFixed(6)}\tASK: \$${avgAsk.toFixed(6)}`);
+        process.stdout.write(`\r${this.targetBTC}x BTC\t\tBID: \$${avgBid.toFixed(6)}\t\tASK: \$${avgAsk.toFixed(6)}`);
     }
 }
 

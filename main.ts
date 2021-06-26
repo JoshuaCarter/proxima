@@ -38,7 +38,7 @@ class Main {
     private readonly websock: WebSocket;
     private readonly targetBTC: number;
     private snapshot: Snapshot;
-    private updates: Update[] = []; // should be doulbly-linked-list
+    private updates: Update[] = []; // could be sortable queue
 
     constructor(btc: number) {
         this.targetBTC = btc;
@@ -80,22 +80,29 @@ class Main {
         }
     }
     private applyUpdates() {
-        // wait for snapshot, 100 updates, and for updates to catchup to snapshot
-        if (!this.snapshot || this.updates.length < 100 ||
+        // sort update according to update time
+        this.updates.sort((a: Update, b: Update): number => {
+            return a.E - b.E;
+        });
+
+        // wait for snapshot and updates, and for updates to catchup to snapshot
+        if (!this.snapshot || !this.updates.length ||
             this.updates[this.updates.length - 1].u < this.snapshot.lastUpdateId) {
             return;
         }
 
         // iter updates
         for (let i = 0; i < this.updates.length; ++i) {
+            // cache and remove from array
             const up = this.updates[i];
-            // remove if too old for this snapshot
+            this.updates.splice(i--, 1);
+
+            // skip if too old for this snapshot
             if (up.u < this.snapshot.lastUpdateId) {
-                this.updates.splice(i--, 1);
                 continue;
             }
 
-            // TODO: handle partial update
+            // SEE README FOR SOLUTION TO PARTIAL UPDATE
 
             //apply update to snapshot
             up.b.forEach(x => {
@@ -128,10 +135,10 @@ class Main {
         };
 
         // calc and log
-        let avgBuy: number = avgTrade(this.targetBTC, Object.keys(this.snapshot.bids).sort(), this.snapshot.bids);
+        let avgBid: number = avgTrade(this.targetBTC, Object.keys(this.snapshot.bids).sort(), this.snapshot.bids);
         let avgAsk: number = avgTrade(this.targetBTC, Object.keys(this.snapshot.asks).sort().reverse(), this.snapshot.asks);
 
-        process.stdout.write(`\r${this.targetBTC}x BTC\t\tBUY: \$${avgBuy.toFixed(7)}\t\tASK: \$${avgAsk.toFixed(7)}`);
+        process.stdout.write(`\r${this.targetBTC}x BTC\t\tBID: \$${avgBid.toFixed(6)}\tASK: \$${avgAsk.toFixed(6)}`);
     }
 }
 

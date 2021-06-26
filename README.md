@@ -2,6 +2,5 @@
 ## Proxmia code challenge
 
 - Run `npm install`.
-- Run `npm start`.
+- Run `npm start {BTC quantity}`.
 - See console output for results.
-- See commit history for progress comments.

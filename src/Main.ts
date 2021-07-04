@@ -11,34 +11,16 @@
 
 import WebSocket from 'ws';
 import Axios from 'axios';
+import { MarketSnapshot } from './models/MarketSnapshot';
+import { MarketUpdate } from './models/MarketUpdate';
 
-interface Snapshot {
-    lastUpdateId: number;
-    bids: {
-        [key: string]: string;
-    };
-    asks: {
-        [key: string]: string;
-    };
-}
-
-interface Update {
-    e: string; // Event type
-    E: number; // Event time
-    s: string; // Symbol
-    U: number; // First update ID in event
-    u: number; // Final update ID in event
-    b: string[][]; // Bids to be updated
-    a: string[][]; // Asks to be updated
-}
-
-class Main {
+export class Main {
     private readonly snapshotUrl = 'https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=1000';
     private readonly updatesUrl = 'wss://stream.binance.com:9443/ws/btcusdt@depth@100ms';
     private readonly websock: WebSocket;
     private readonly targetBTC: number;
-    private snapshot: Snapshot;
-    private updates: Update[] = []; // could be sortable queue
+    private snapshot: MarketSnapshot;
+    private updates: MarketUpdate[] = []; // could be sortable queue
 
     constructor(btc: number) {
         this.targetBTC = btc;
@@ -46,13 +28,13 @@ class Main {
         this.websock = new WebSocket(this.updatesUrl);
         this.websock.on('error', (e: any) => { console.error(e); });
         this.websock.on('ping', () => { this.websock.pong(); });
-        this.websock.on('message', (data: any) => { this.updates.push(JSON.parse(data) as Update); });
+        this.websock.on('message', (data: any) => { this.updates.push(JSON.parse(data) as MarketUpdate); });
     }
 
     public async run() {
-        await main.getSnapshot();
-        main.applyUpdates();
-        main.calcAverages();
+        await this.getSnapshot();
+        this.applyUpdates();
+        this.calcAverages();
         setTimeout(this.run.bind(this), 1000);
     }
     private async getSnapshot() {
@@ -69,10 +51,10 @@ class Main {
                 asks: {},
             };
             // turn bid/ask arrays into maps
-            response.data.bids.forEach((x: Update) => {
+            response.data.bids.forEach((x: MarketUpdate) => {
                 this.snapshot.bids[x[0]] = x[1];
             });
-            response.data.asks.forEach((x: Update) => {
+            response.data.asks.forEach((x: MarketUpdate) => {
                 this.snapshot.asks[x[0]] = x[1];
             });
         } else {
@@ -81,7 +63,7 @@ class Main {
     }
     private applyUpdates() {
         // sort update according to update time
-        this.updates.sort((a: Update, b: Update): number => {
+        this.updates.sort((a: MarketUpdate, b: MarketUpdate): number => {
             return a.E - b.E;
         });
 
@@ -140,9 +122,7 @@ class Main {
 
         process.stdout.write(`\r${this.targetBTC}x BTC\t\tBID: \$${avgBid.toFixed(6)}\t\tASK: \$${avgAsk.toFixed(6)}`);
     }
+    public sum(a: number, b: number): number {
+        return Math.floor(a + b);
+    }
 }
-
-// run
-const arg = process.argv[2];
-const main = new Main(arg ? +arg : 1);
-main.run();

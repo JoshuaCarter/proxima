@@ -9,8 +9,8 @@
     - Output to console
 */
 
-import WebSocket = require('ws');
-import * as axios from 'axios';
+import WebSocket from 'ws';
+import Axios from 'axios';
 
 interface Snapshot {
     lastUpdateId: number;
@@ -61,7 +61,7 @@ class Main {
             return;
         }
         // get snapshot
-        const response = await axios.default.get(this.snapshotUrl);
+        const response = await Axios.get(this.snapshotUrl);
         if (response.status == 200 && response.data != null) {
             this.snapshot = {
                 lastUpdateId: response.data.lastUpdateId,

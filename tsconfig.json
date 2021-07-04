@@ -1,8 +1,11 @@
 {
-    "include": [ "./**/*.ts" ],
+    "include": [ "./src/**/*.ts" ],
     "exclude": [ "node_modules" ],
     "compilerOptions": {
-        "module": "commonjs",
+        "outDir": "build",
+        "module": "ES2015",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
         "lib": [ "es6" ]
     },
 }
